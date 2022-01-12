@@ -4,7 +4,6 @@ const [width, height] = [800, 600];
 let p0, p1, p2, p3;
 
 const step = 0.01;
-let my
 let t = 0;
 
 let myCurve = [];
@@ -41,7 +40,7 @@ function draw() {
 
   // Draw line from p2 to end
   drawLine(p2.vectorPos(), p3.vectorPos(), "gray", 1);
-  
+
   updateDraggable(p0);
   updateDraggable(p1);
   updateDraggable(p2);
@@ -167,12 +166,12 @@ function quadraticBezier(v0, v1, v2) {
   return tmpCurve
 }
 
-// Returns an array with bezier
+// Returns an array with bezier using De Casteljau's algorithm
 function cubicBezier(start, v1, v2, end) {
   let tmpCurve = [];
 
   for (let t1 = 0; t1 <= 1; t1 += step) {
-    
+    /*
     // Get lerps between each point
     let l1 = lerpVector(start, v1, t1);
     let l2 = lerpVector(v1, v2, t1);
@@ -184,16 +183,18 @@ function cubicBezier(start, v1, v2, end) {
 
     // Lerp between those two
     let fl = lerpVector(l12, l23, t1);
-    
-
-    /*
-    let fl = createVector(
-      (pow((1 - t1), 3) * start.x) * ((3 * pow((1 - t1), 2)) * t * v1.x) + ((3 * pow(1 - t1) * pow(t1, 2) * v2.x)) + (pow(t1, 3) * end.x),
-      (pow((1 - t1), 3) * start.y) * ((3 * pow((1 - t1), 2)) * t * v1.y) + ((3 * pow(1 - t1) * pow(t1, 2) * v2.y)) + (pow(t1, 3) * end.y)
-    );
     */
-    
 
+    let sect1 = pow(1 - t1, 3);
+    let sect2 = 3 * pow(1 - t1, 2) * t1;
+    let sect3 = 3 * (1 - t1) * pow(t1, 2);
+    let sect4 = pow(t1, 3);
+    
+    let fl = createVector(
+      sect1 * start.x + sect2 * v1.x + sect3 * v2.x + sect4 * end.x,
+      sect1 * start.y + sect2 * v1.y + sect3 * v2.y + sect4 * end.y
+    )
+    
     tmpCurve.push(fl);
   }
 
