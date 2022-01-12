@@ -3,47 +3,62 @@
 const [width, height] = [800, 600];
 let p0, p1, p2, p3;
 
-let step = 0.01;
+const step = 0.01;
+let my
 let t = 0;
 
 let myCurve = [];
 
+let curve1;
+
+function lerpVector(p1, p2, t) {
+  return createVector((1-t) * p1.x + t * p2.x, (1-t) * p1.y + t * p2.y)
+}
+
 function setup() {
   createCanvas(800, 600);
-  p0 = createVector(80, 220);
-  p1 = createVector(330, 70);
-  p2 = createVector(500, 400);
-  p3 = createVector(700, 200);
+  p0 = new Draggable(80, 220);
+  p1 = new Draggable(330, 70);
+  p2 = new Draggable(500, 400);
+  p3 = new Draggable(700, 300);
+
+  curve1 = cubicBezier(p0.vectorPos(), p1.vectorPos(), p2.vectorPos(), p3.vectorPos());
+}
+
+let updateCurve = false;
+
+function updateDraggable(drag) {
+  drag.update();
+  drag.over();
+  drag.show();
 }
 
 function draw() {
   background(240);
 
-  // t value
-  noStroke();
-  fill("black")
-  textSize(20);
-  text("t: " + str(round(t * 100)/100), 15, 30);
+  // Draw line from start to p1
+  drawLine(p0.vectorPos(), p1.vectorPos(), "gray", 1);
 
-  if (t > 1 || t < 0) {
-    step *= -1;
-  }
-  t += step;
-
-  // quadraticBezierDemonstration();
-  cubicBezierDemonstration();
+  // Draw line from p2 to end
+  drawLine(p2.vectorPos(), p3.vectorPos(), "gray", 1);
   
+  updateDraggable(p0);
+  updateDraggable(p1);
+  updateDraggable(p2);
+  updateDraggable(p3);
+  
+  if (p0.dragging || p1.dragging || p2.dragging || p3.dragging) {
+    curve1 = cubicBezier(
+      p0.vectorPos(), 
+      p1.vectorPos(), 
+      p2.vectorPos(), 
+      p3.vectorPos()
+    );
+  }
 
-  /*
-  const curve1 = quadraticBezier(p0, p1, p2);
-  console.log(curve1);
   for (let i = 0; i < curve1.length - 1; i++) {
     drawLine(curve1[i], curve1[i + 1], "black", 2);
   }
-
-  noLoop();
-  */
-  
 }
 
 function drawLine(start, end, color, weight = 3) {
@@ -67,8 +82,8 @@ function quadraticBezierDemonstration() {
   drawLine(p1, p2, "blue")
 
   // Lerp the lines
-  let l1 = p5.Vector.lerp(p0, p1, t);
-  let l2 = p5.Vector.lerp(p1, p2, t);
+  let l1 = lerpVector(p0, p1, t);
+  let l2 = lerpVector(p1, p2, t);
 
   // Draw their corresponding dots
   drawDot(l1, "red");
@@ -78,7 +93,7 @@ function quadraticBezierDemonstration() {
   drawLine(l1, l2, "green");
 
   // Lerp the line between lerped vectors, this is our curve
-  let l3 = p5.Vector.lerp(l1, l2, t);
+  let l3 = lerpVector(l1, l2, t);
   drawDot(l3, "purple");
 
   // Store vector into curve array
@@ -97,9 +112,9 @@ function cubicBezierDemonstration() {
   drawLine(p2, p3, "blue")
 
   // Lerp the lines
-  let l1 = p5.Vector.lerp(p0, p1, t);
-  let l2 = p5.Vector.lerp(p1, p2, t);
-  let l3 = p5.Vector.lerp(p2, p3, t);
+  let l1 = lerpVector(p0, p1, t);
+  let l2 = lerpVector(p1, p2, t);
+  let l3 = lerpVector(p2, p3, t);
 
   // Draw their corresponding dots
   drawDot(l1, "red");
@@ -111,20 +126,20 @@ function cubicBezierDemonstration() {
   drawLine(l2, l3, "green");
 
   // Lerp the line between the first two lerped vectors, this is our curve
-  let l4 = p5.Vector.lerp(l1, l2, t);
+  let l4 = lerpVector(l1, l2, t);
   drawDot(l4, "purple");
 
   // Lerp the line between second set of lerped vectors, this is our curve
-  let l5 = p5.Vector.lerp(l2, l3, t);
+  let l5 = lerpVector(l2, l3, t);
   drawDot(l5, "purple");
 
   // Draw line between l4 and l5 since we'll be lerping on this as well
   drawLine(l4, l5, "orange");
 
   // Get the final lerp between l4 and l5
-  let fl = p5.Vector.lerp(l4, l5, t);
+  let fl = lerpVector(l4, l5, t);
   drawDot(fl, "black", 6, 6);
-  
+
 
   // Store vector into curve array
   myCurve.push(fl);
@@ -140,14 +155,74 @@ function quadraticBezier(v0, v1, v2) {
 
   for (let t1 = 0; t1 <= 1; t1 += step) {
     // Get lerps between each point
-    let l1 = p5.Vector.lerp(v0, v1, t1);
-    let l2 = p5.Vector.lerp(v1, v2, t1);
+    let l1 = lerpVector(v0, v1, t1);
+    let l2 = lerpVector(v1, v2, t1);
 
     // Lerp between lerped vectors to get curve
-    let l3 = p5.Vector.lerp(l1, l2, t1);
+    let l3 = lerpVector(l1, l2, t1);
 
     tmpCurve.push(l3);
   }
 
   return tmpCurve
+}
+
+// Returns an array with bezier
+function cubicBezier(start, v1, v2, end) {
+  let tmpCurve = [];
+
+  for (let t1 = 0; t1 <= 1; t1 += step) {
+    
+    // Get lerps between each point
+    let l1 = lerpVector(start, v1, t1);
+    let l2 = lerpVector(v1, v2, t1);
+    let l3 = lerpVector(v2, end, t1);
+
+    // Lerp between each of those sets
+    let l12 = lerpVector(l1, l2, t1);
+    let l23 = lerpVector(l2, l3, t1);
+
+    // Lerp between those two
+    let fl = lerpVector(l12, l23, t1);
+    
+
+    /*
+    let fl = createVector(
+      (pow((1 - t1), 3) * start.x) * ((3 * pow((1 - t1), 2)) * t * v1.x) + ((3 * pow(1 - t1) * pow(t1, 2) * v2.x)) + (pow(t1, 3) * end.x),
+      (pow((1 - t1), 3) * start.y) * ((3 * pow((1 - t1), 2)) * t * v1.y) + ((3 * pow(1 - t1) * pow(t1, 2) * v2.y)) + (pow(t1, 3) * end.y)
+    );
+    */
+    
+
+    tmpCurve.push(fl);
+  }
+
+
+  return tmpCurve
+}
+
+function nDegreeBezier(start, v1, v2, end) {
+  let tmpCurve = [];
+
+  for (j = N - 1; j > 0; j--) {
+    for (i = 0; i < j; i++) {
+      Px[i] = (1 - t) * Px[i] + t * Px[i + 1];
+      Py[i] = (1 - t) * Py[i] + t * Py[i + 1];
+    }
+  }
+}
+
+function mousePressed() {
+  p0.pressed();
+  p1.pressed();
+  p2.pressed();
+  p3.pressed();
+}
+
+function mouseReleased() {
+  // Quit dragging
+  p0.released();
+  p1.released();
+  p2.released();
+  p3.released();
 }
