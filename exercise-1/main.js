@@ -2,26 +2,41 @@
 
 const [width, height] = [800, 600];
 let p0, p1, p2, p3;
+let p4, point5, p6, p7;
 
 const step = 0.01;
 let t = 0;
 
 let myCurve = [];
 
-let curve1;
+let curve1, curve2;
 
 function lerpVector(p1, p2, t) {
   return createVector((1-t) * p1.x + t * p2.x, (1-t) * p1.y + t * p2.y)
 }
 
+function reflectPointOverPoint(origin, reflected) {
+  return createVector(
+    origin.x - (reflected.x - origin.x),
+    origin.y - (reflected.y - origin.y)
+  );
+}
+
 function setup() {
   createCanvas(800, 600);
-  p0 = new Draggable(80, 220);
-  p1 = new Draggable(330, 70);
-  p2 = new Draggable(500, 400);
-  p3 = new Draggable(700, 300);
+  p0 = new Draggable(60, 310);
+  p1 = new Draggable(60, 10);
+  p2 = new Draggable(400, 5);
+  p3 = new Draggable(390, 300);
+
+  p4 = new Draggable(391, 560);
+  point5 = new Draggable(690, 570);
+  p6 = new Draggable(700, 280);
+  p7 = new Draggable(700, 450);
+  
 
   curve1 = cubicBezier(p0.vectorPos(), p1.vectorPos(), p2.vectorPos(), p3.vectorPos());
+  curve2 = cubicBezier(p3.vectorPos(), p4.vectorPos(), point5.vectorPos(), p6.vectorPos());
 }
 
 let updateCurve = false;
@@ -41,10 +56,26 @@ function draw() {
   // Draw line from p2 to end
   drawLine(p2.vectorPos(), p3.vectorPos(), "gray", 1);
 
+  // Draw line from start to p1
+  drawLine(p3.vectorPos(), p4.vectorPos(), "gray", 1);
+
+  // Draw line from p2 to end
+  drawLine(point5.vectorPos(), p6.vectorPos(), "gray", 1);
+
   updateDraggable(p0);
   updateDraggable(p1);
   updateDraggable(p2);
   updateDraggable(p3);
+  updateDraggable(p4);
+  updateDraggable(point5);
+  updateDraggable(p6);
+  updateDraggable(p7);
+
+  p4.x = reflectPointOverPoint(p3, p2).x;
+  p4.y = reflectPointOverPoint(p3, p2).y;
+
+  console.log(p4.x, p4.y)
+  console.log(p4.vectorPos())
   
   if (p0.dragging || p1.dragging || p2.dragging || p3.dragging) {
     curve1 = cubicBezier(
@@ -55,8 +86,21 @@ function draw() {
     );
   }
 
+  if (p2.dragging || p3.dragging || p4.dragging || point5.dragging || p6.dragging) {
+    curve2 = cubicBezier(
+      p3.vectorPos(), 
+      p4.vectorPos(), 
+      point5.vectorPos(), 
+      p6.vectorPos()
+    );
+  }
+
   for (let i = 0; i < curve1.length - 1; i++) {
     drawLine(curve1[i], curve1[i + 1], "black", 2);
+  }
+
+  for (let i = 0; i < curve1.length - 1; i++) {
+    drawLine(curve2[i], curve2[i + 1], "black", 2);
   }
 }
 
@@ -170,6 +214,8 @@ function quadraticBezier(v0, v1, v2) {
 function cubicBezier(start, v1, v2, end) {
   let tmpCurve = [];
 
+  nDegreeBezier([start, v1, v2, end], 0);
+
   for (let t1 = 0; t1 <= 1; t1 += step) {
     /*
     // Get lerps between each point
@@ -185,6 +231,7 @@ function cubicBezier(start, v1, v2, end) {
     let fl = lerpVector(l12, l23, t1);
     */
 
+    /*
     let sect1 = pow(1 - t1, 3);
     let sect2 = 3 * pow(1 - t1, 2) * t1;
     let sect3 = 3 * (1 - t1) * pow(t1, 2);
@@ -194,6 +241,10 @@ function cubicBezier(start, v1, v2, end) {
       sect1 * start.x + sect2 * v1.x + sect3 * v2.x + sect4 * end.x,
       sect1 * start.y + sect2 * v1.y + sect3 * v2.y + sect4 * end.y
     )
+    */
+    
+
+    fl = nDegreeBezier([start, v1, v2, end], t1);
     
     tmpCurve.push(fl);
   }
@@ -202,15 +253,28 @@ function cubicBezier(start, v1, v2, end) {
   return tmpCurve
 }
 
-function nDegreeBezier(start, v1, v2, end) {
-  let tmpCurve = [];
-
-  for (j = N - 1; j > 0; j--) {
-    for (i = 0; i < j; i++) {
-      Px[i] = (1 - t) * Px[i] + t * Px[i + 1];
-      Py[i] = (1 - t) * Py[i] + t * Py[i + 1];
-    }
+function factorial(x) {
+  if (x < 2) {
+    return 1;
   }
+
+  return x * factorial(x - 1);
+}
+
+function nCr(n, r) {
+  return factorial(n) / (factorial(r) * factorial(n - r));
+}
+
+function nDegreeBezier(points, t) {
+  let n = points.length - 1;
+  let Bx = 0;
+  let By = 0;
+  for (let i = 0; i <= n; i++) {
+    Bx += nCr(3, i) * Math.pow((1 - t), (n - i)) * pow(t, i) * points[i].x;
+    By += nCr(3, i) * Math.pow((1 - t), (n - i)) * pow(t, i) * points[i].y;
+  }
+
+  return createVector(Bx, By);
 }
 
 function mousePressed() {
@@ -218,6 +282,10 @@ function mousePressed() {
   p1.pressed();
   p2.pressed();
   p3.pressed();
+  p4.pressed();
+  point5.pressed();
+  p6.pressed();
+  p7.pressed();
 }
 
 function mouseReleased() {
@@ -226,4 +294,8 @@ function mouseReleased() {
   p1.released();
   p2.released();
   p3.released();
+  p4.released();
+  point5.released();
+  p6.released();
+  p7.released();
 }
