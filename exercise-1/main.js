@@ -16,6 +16,93 @@ function lerpVector(p1, p2, t) {
   return createVector((1-t) * p1.x + t * p2.x, (1-t) * p1.y + t * p2.y)
 }
 
+// Basically range from function, useful for iteration using map
+const range = n => Array.from(Array(n).keys())
+
+function getBezierCoef(points) {
+  // Formula says n+1 points, so n is 1 less
+  let n = points.length - 1;
+
+  // Built coefficients matrix
+  let C = range(n).map((_, z) => {
+    let newArr = [];
+    for (let i = 0; i < n; i++) {
+      if (i == z) {
+        // 4 * np.identity(n)
+        newArr.push(4);
+      } else if (i == z - 1) {
+        // np.fill_diagonal(C[1:], 1)
+        newArr.push(1);
+      } else if (i == z + 1) {
+        // np.fill_diagonal(C[:, 1:], 1)
+        newArr.push(1);
+      } else {
+        newArr.push(0);
+      }
+    }
+
+    return newArr;
+  });
+
+  C[0][0] = 2
+  C[n - 1][n - 1] = 7
+  C[n - 1][n - 2] = 2
+
+  // Build Points vector
+  let P = range(n).map(i => (
+    [
+      2 * (2 * points[i].x + points[i + 1].x),
+      2 * (2 * points[i].y + points[i + 1].y)
+    ]
+  ));
+
+  P[0] = [
+    points[0].x + 2 * points[1].x,
+    points[0].y + 2 * points[1].y
+  ];
+  P[n - 1] = [
+    8 * points[n - 1].x + points[n].x,
+    8 * points[n - 1].y + points[n].y
+  ];
+
+  // Solve the system, find A & B
+  let A = linear.solve(C, P);
+
+  let B = range(n - 1).map(i => ([
+    2 * points[i + 1].x - A[i + 1][0],
+    2 * points[i + 1].y - A[i + 1][1]
+  ]));
+  B.push([0, 0])
+
+  B[n - 1] = [
+    (A[n - 1][0] + points[n].x) / 2,
+    (A[n - 1][1] + points[n].y) / 2
+  ]
+  
+  return [ A, B ];
+}
+
+const matrixToVector = matrix => createVector(matrix[0], matrix[1])
+
+function getBezierCubicFromPoints(points) {
+  let [A, B] = getBezierCoef(points);
+  return range(points.length - 1).map(i => (
+    getNDegreeBezierFunc([points[i], matrixToVector(A[i]), matrixToVector(B[i]), points[i + 1]])
+  ));
+}
+
+function evaluateBezier(points, n) {
+  let curves = getBezierCubicFromPoints(points);
+
+  let finalCurve = [];
+
+  for (let t1 = 0; t1 <= 1; t1 += 1/n) {
+    curves.forEach(func => finalCurve.push(func(t1)));
+  }
+
+  return finalCurve;
+}
+
 function reflectPointOverPoint(origin, reflected) {
   return createVector(
     origin.x - (reflected.x - origin.x),
@@ -25,12 +112,15 @@ function reflectPointOverPoint(origin, reflected) {
 
 function setup() {
   createCanvas(800, 600);
+
+  
   p0 = new Draggable(60, 310);
   p1 = new Draggable(60, 10);
   p2 = new Draggable(400, 5);
   p3 = new Draggable(390, 300);
 
   p4 = new Draggable(391, 560);
+  /*
   point5 = new Draggable(690, 570);
   p6 = new Draggable(700, 280);
   p7 = new Draggable(700, 450);
@@ -53,6 +143,7 @@ function setup() {
     p6.noShow = noShowControl;
     p7.noShow = noShowControl;
   });
+  */
 }
 
 let updateCurve = false;
@@ -66,6 +157,13 @@ function updateDraggable(drag) {
 function draw() {
   background(240);
 
+  updateDraggable(p0);
+  updateDraggable(p1);
+  updateDraggable(p2);
+  updateDraggable(p3);
+  updateDraggable(p4);
+
+  /*
   if (!noShowControl) {
     // Draw line from start to p1
     drawLine(p0.vectorPos(), p1.vectorPos(), "gray", 1);
@@ -117,6 +215,19 @@ function draw() {
   for (let i = 0; i < curve1.length - 1; i++) {
     drawLine(curve2[i], curve2[i + 1], "black", 2);
   }
+  */
+
+  const points = evaluateBezier([
+    p0.vectorPos(),
+    p1.vectorPos(),
+    p2.vectorPos(),
+    p3.vectorPos(),
+    p4.vectorPos(),
+    ], 100);
+    for (let i = 0; i < points.length - 1; i++) {
+      // drawLine(points[i], points[i + 1], "black", 2);
+      drawDot(points[i], "black", 2, 2)
+    }
 }
 
 function drawLine(start, end, color, weight = 3) {
@@ -290,6 +401,22 @@ function nDegreeBezier(points, t) {
   }
 
   return createVector(Bx, By);
+}
+
+function getNDegreeBezierFunc(points) {
+  let n = points.length - 1;
+
+  const curveFunc = t => {
+    let Bx = 0;
+    let By = 0;
+    for (let i = 0; i <= n; i++) {
+      Bx += nCr(3, i) * Math.pow((1 - t), (n - i)) * pow(t, i) * points[i].x;
+      By += nCr(3, i) * Math.pow((1 - t), (n - i)) * pow(t, i) * points[i].y;
+    }
+    return createVector(Bx, By);
+  }
+
+  return curveFunc;
 }
 
 function mousePressed() {
