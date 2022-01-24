@@ -3,6 +3,7 @@
 const [width, height] = [800, 600];
 let p0, p1, p2, p3;
 let p4, point5, p6, p7;
+let btn, noShowControl = false;
 
 const step = 0.01;
 let t = 0;
@@ -37,6 +38,21 @@ function setup() {
 
   curve1 = cubicBezier(p0.vectorPos(), p1.vectorPos(), p2.vectorPos(), p3.vectorPos());
   curve2 = cubicBezier(p3.vectorPos(), p4.vectorPos(), point5.vectorPos(), p6.vectorPos());
+
+  btn = createButton("Turn on / off point control");
+  btn.position(0, 610);
+  btn.mousePressed(() => {
+    noShowControl = !noShowControl;
+    
+    p0.noShow = noShowControl;
+    p1.noShow = noShowControl;
+    p2.noShow = noShowControl;
+    p3.noShow = noShowControl;
+    p4.noShow = noShowControl;
+    point5.noShow = noShowControl;
+    p6.noShow = noShowControl;
+    p7.noShow = noShowControl;
+  });
 }
 
 let updateCurve = false;
@@ -50,17 +66,19 @@ function updateDraggable(drag) {
 function draw() {
   background(240);
 
-  // Draw line from start to p1
-  drawLine(p0.vectorPos(), p1.vectorPos(), "gray", 1);
+  if (!noShowControl) {
+    // Draw line from start to p1
+    drawLine(p0.vectorPos(), p1.vectorPos(), "gray", 1);
 
-  // Draw line from p2 to end
-  drawLine(p2.vectorPos(), p3.vectorPos(), "gray", 1);
+    // Draw line from p2 to end
+    drawLine(p2.vectorPos(), p3.vectorPos(), "gray", 1);
 
-  // Draw line from start to p1
-  drawLine(p3.vectorPos(), p4.vectorPos(), "gray", 1);
+    // Draw line from start to p1
+    drawLine(p3.vectorPos(), p4.vectorPos(), "gray", 1);
 
-  // Draw line from p2 to end
-  drawLine(point5.vectorPos(), p6.vectorPos(), "gray", 1);
+    // Draw line from p2 to end
+    drawLine(point5.vectorPos(), p6.vectorPos(), "gray", 1);
+  }
 
   updateDraggable(p0);
   updateDraggable(p1);
@@ -73,9 +91,6 @@ function draw() {
 
   p4.x = reflectPointOverPoint(p3, p2).x;
   p4.y = reflectPointOverPoint(p3, p2).y;
-
-  console.log(p4.x, p4.y)
-  console.log(p4.vectorPos())
   
   if (p0.dragging || p1.dragging || p2.dragging || p3.dragging) {
     curve1 = cubicBezier(

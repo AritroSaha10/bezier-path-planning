@@ -4,7 +4,7 @@ class Draggable {
       this.dragging = false; // Is the object being dragged?
       this.draggedBefore = false;
       this.rollover = false; // Is the mouse over the ellipse?
-  
+      this.noShow = false;
   
       this.x = x;
       this.y = y;
@@ -34,7 +34,6 @@ class Draggable {
     }
   
     show() {
-  
       stroke(0);
       // Different fill based on state
       if (this.dragging) {
@@ -44,6 +43,12 @@ class Draggable {
       } else {
         fill(175, 200);
       }
+
+      if (this.noShow) {
+        noFill();
+        noStroke();
+      }
+
       rect(this.x, this.y, this.w, this.h);
     }
   
