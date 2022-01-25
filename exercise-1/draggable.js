@@ -40,7 +40,11 @@ class Draggable {
         fill(50);
       } else if (this.rollover) {
         fill(100);
-      } else {
+      } else if (this.end) {
+        fill("green")
+      } else if (this.start) {
+        fill("red")
+      }else {
         fill(175, 200);
       }
 
