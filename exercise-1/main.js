@@ -11,6 +11,7 @@ let t = 0;
 let myCurve = [];
 
 let curve1, curve2;
+let img;
 
 function lerpVector(p1, p2, t) {
   return createVector((1-t) * p1.x + t * p2.x, (1-t) * p1.y + t * p2.y)
@@ -110,8 +111,12 @@ function reflectPointOverPoint(origin, reflected) {
   );
 }
 
+function preload() {
+  img = loadImage('assets/field.png');
+}
+
 function setup() {
-  createCanvas(800, 600);
+  createCanvas(800, 800);
 
   
   p0 = new Draggable(60, 310);
@@ -156,6 +161,7 @@ function updateDraggable(drag) {
 
 function draw() {
   background(240);
+  image(img, 0, 0, 800, 800);
 
   updateDraggable(p0);
   updateDraggable(p1);
