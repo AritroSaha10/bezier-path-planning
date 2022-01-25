@@ -23,6 +23,7 @@ function setup() {
       new Draggable(
         clamp(Math.random() * 1000, 300, 700),
         clamp(Math.random() * 1000, 300, 700),
+        controlPoints.length
       ),
     )
   })
@@ -43,7 +44,7 @@ function setup() {
   resetBtn.mousePressed(resetPath)
 
   // Add resolution slider
-  resolutionSlider = createSlider(50, 500, 50, 10)
+  resolutionSlider = createSlider(1, 50, 10, 1)
   resolutionSlider.position(20, 900)
   resolutionSlider.style('width', '80px')
   createP('Resolution slider').position(23, 867)
@@ -68,13 +69,26 @@ function draw() {
   )
 
   for (let i = 0; i < curve.length - 1; i++) {
-    // drawLine(curve[i], curve[i + 1], "black", 2);
+    drawLine(curve[i], curve[i + 1], "black", lineThicknessSlider.value())
+
+    /*
     drawDot(
       curve[i],
       'blue',
       lineThicknessSlider.value() + 1,
       lineThicknessSlider.value(),
     )
+    */
+
+    // Number each sub point calculated
+    /*
+    push()
+    stroke(0)
+    strokeWeight(1)
+    fill("black")
+    text(i, curve[i].x, curve[i].y);
+    pop()
+    */
   }
 
   controlPoints.forEach((p, i) => updateDraggable(p, i))
@@ -111,6 +125,7 @@ function resetPath() {
       new Draggable(
         clamp(Math.random() * 1000, 300, 700),
         clamp(Math.random() * 1000, 300, 700),
+        i
       ),
     )
   }

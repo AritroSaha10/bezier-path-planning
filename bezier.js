@@ -100,9 +100,11 @@ function evaluateBezier(points, n) {
 
   let finalCurve = []
 
-  for (let t1 = 0; t1 <= 1; t1 += 1 / n) {
-    curves.forEach((func) => finalCurve.push(func(t1)))
-  }
+  curves.forEach((func) => {
+    for (let t1 = 0; t1 <= 1; t1 += 1 / n) {
+      finalCurve.push(func(t1))
+    }
+  })
 
   return finalCurve
 }

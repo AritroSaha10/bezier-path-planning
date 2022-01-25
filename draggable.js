@@ -1,5 +1,5 @@
 class Draggable {
-  constructor(x = 100, y = 100) {
+  constructor(x = 100, y = 100, i) {
 
     this.dragging = false; // Is the object being dragged?
     this.draggedBefore = false;
@@ -11,6 +11,7 @@ class Draggable {
     // Dimensions
     this.w = 20;
     this.h = 20;
+    this.i = i;
   }
 
   over() {
@@ -54,6 +55,13 @@ class Draggable {
     }
 
     rect(this.x, this.y, this.w, this.h);
+
+    push()
+    stroke(0)
+    strokeWeight(1)
+    fill("black")
+    text(this.i, this.x, this.y);
+    pop()
   }
 
   pressed() {
