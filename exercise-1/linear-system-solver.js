@@ -5,7 +5,7 @@
  */
 
 var linear = (function () {
-    let exports = {}
+  let exports = {}
   /**
    * Used internally to solve systems
    * If you want to solve A.x = B,
