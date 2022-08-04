@@ -8,7 +8,7 @@ let resolutionSlider, lineThicknessSlider
 
 function preload() {
   // Load in field asset
-  fieldImg = loadImage('assets/field.png')
+  fieldImg = loadImage('assets/spin-up.png')
 }
 
 function setup() {
