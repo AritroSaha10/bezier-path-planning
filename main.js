@@ -6,8 +6,7 @@ let fieldImg
 let newWaypointBtn, removeWaypointBtn, resetBtn
 let resolutionSlider, lineThicknessSlider
 
-let robotPos
-let robotPot = 0
+let robot
 
 function preload() {
   // Load in field asset
@@ -17,8 +16,8 @@ function preload() {
 function setup() {
   createCanvas(900, 900)
 
-  // Create starting robot position
-  robotPos = fieldCoordsToRealCoords(7, 1)
+  // Create robot
+  robot = new Robot(7, 1)
 
   // Create new waypoint btn
   newWaypointBtn = createButton('New Waypoint')
@@ -81,33 +80,8 @@ function draw() {
     drawLine(curve[i], curve[i + 1], "black", lineThicknessSlider.value())
   }
 
-  // W -> Forward
-  if (keyIsDown(87)) {
-    robotPos.y -= 4
-  }
-  // S -> Backawrd
-  if (keyIsDown(83)) {
-    robotPos.y += 4
-  }
-  // A -> Left
-  if (keyIsDown(65)) {
-    robotPos.x -= 4
-  }
-  // D -> Right
-  if (keyIsDown(68)) {
-    robotPos.x += 4
-  }
-
-  // Rotate left
-  if (keyIsDown(LEFT_ARROW)) {
-    robotPot -= PI / 45
-  }
-  // Rotate right
-  if (keyIsDown(RIGHT_ARROW)) {
-    robotPot += PI / 45
-  }
-
-  drawSquare(robotPos, robotPot, 100, "red", 2)
+  robot.handleControls()
+  robot.show()
 
   controlPoints.forEach((p, i) => updateDraggable(p, i))
 }
