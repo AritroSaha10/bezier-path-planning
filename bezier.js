@@ -1,3 +1,6 @@
+// Index of draggable for bezier control points
+const BEZIER_CONTROL_IDX = 10e10
+
 function getBezierCoef(points) {
   // Formula says n+1 points, so n is 1 less
   let n = points.length - 1
@@ -85,6 +88,16 @@ const matrixToVector = (matrix) => createVector(matrix[0], matrix[1])
 
 function getBezierCubicFromPoints(points) {
   let [A, B] = getBezierCoef(points)
+
+  const bezierCurves = range(points.length - 1).map(i => [
+    points[i],
+    matrixToVector(A[i]),
+    matrixToVector(B[i]),
+    points[i + 1]
+  ]);
+
+  console.log(bezierCurves)
+
   return range(points.length - 1).map((i) =>
     getNDegreeBezierFunc([
       points[i],

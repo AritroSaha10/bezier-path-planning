@@ -54,14 +54,21 @@ class Draggable {
       noStroke();
     }
 
-    rect(this.x, this.y, this.w, this.h);
+    if (this.i !== BEZIER_CONTROL_IDX) {
+      rect(this.x, this.y, this.w, this.h);
 
-    push()
-    stroke(0)
-    strokeWeight(1)
-    fill("black")
-    text(this.i, this.x, this.y);
-    pop()
+      push()
+      stroke(0)
+      strokeWeight(1)
+      fill("black")
+      text(this.i, this.x, this.y);
+      pop()
+    } else {
+      // is a bezier control, draw differently
+      push()
+      rect(this.x, this.y, 15, 15)
+      pop()
+    }
   }
 
   pressed() {
